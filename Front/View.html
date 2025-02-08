@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Web App</title>
+    <script async src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            color: #333;
+        }
+        select, button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        #predictions {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Crypto Prediction App</h1>
+    <p>Select a currency pair:</p>
+    <select id="currency-pairs">
+        <!-- Валютные пары будут загружены сюда -->
+    </select>
+    <button onclick="submitData()">Get Prediction</button>
+
+    <div id="predictions">
+        <h3>Price Predictions</h3>
+        <p id="prediction-result">Loading...</p>
+    </div>
+
+    <script>
+        // Инициализация Web App
+        Telegram.WebApp.init();
+
+        // Функция для отправки выбранной валютной пары в Telegram
+        function submitData() {
+            const selectedCurrencyPair = document.getElementById('currency-pairs').value;
+            if (selectedCurrencyPair) {
+                Telegram.WebApp.sendData({ currencyPair: selectedCurrencyPair });
+
+                // Симуляция получения прогнозов
+                getPrediction(selectedCurrencyPair);
+            }
+        }
+
+        // Функция для получения прогнозов с сервера (симуляция)
+        function getPrediction(pair) {
+            // Здесь будет запрос к серверу, пока для примера используем статические данные
+            const predictions = {
+                "BTC/USD": [50000, 51000, 52000],
+                "ETH/USD": [4000, 4100, 4200],
+                "XRP/USD": [1.2, 1.25, 1.3]
+            };
+
+            const result = predictions[pair] || [];
+            const predictionResult = document.getElementById('prediction-result');
+            if (result.length > 0) {
+                predictionResult.innerHTML = `Predicted Prices for ${pair}: <br> ${result.join(' → ')}`;
+                document.getElementById('predictions').style.display = 'block';
+            } else {
+                predictionResult.innerHTML = 'No predictions available.';
+                document.getElementById('predictions').style.display = 'block';
+            }
+        }
+
+        // Получаем валютные пары с бэкенда (здесь симуляция)
+        fetch('/api/currency-pairs')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('currency-pairs');
+                data.forEach(pair => {
+                    const option = document.createElement('option');
+                    option.value = pair;
+                    option.text = pair;
+                    select.appendChild(option);
+                });
+            });
+    </script>
+</body>
+</html>

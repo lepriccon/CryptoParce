@@ -4,11 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Parce</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Градиентный фон */
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(to bottom, #2c2c2c, #000);
+            overflow: hidden;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Контейнер анимации */
+        .animation-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Пульсирующий круг */
+        .pulse {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* Бегущая строка */
+        .marquee-container {
+            position: absolute;
+            top: 10%;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            mask-image: linear-gradient(to right, transparent, white 10%, white 90%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, white 10%, white 90%, transparent);
+        }
+
+        .marquee {
+            display: inline-block;
+            font-size: 14px;
+            font-weight: normal;
+            text-transform: uppercase;
+            color: #ccc;
+            animation: marquee 10s linear infinite;
+        }
+
+        @keyframes marquee {
+            from { transform: translateX(100%); }
+            to { transform: translateX(-100%); }
+        }
+
+    </style>
 </head>
 <body>
     <div class="animation-container">
-        <div class="circle"></div>
+        <div class="marquee-container">
+            <div class="marquee">Crypto Parce • Crypto Parce • Crypto Parce •</div>
+        </div>
+        <div class="pulse"></div>
     </div>
 </body>
 </html>

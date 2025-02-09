@@ -1,0 +1,45 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0;
+}
+
+.animation-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #3498db;
+    animation: moveCircle 5s linear infinite;
+}
+
+/* Анимация движения круга */
+@keyframes moveCircle {
+    0% {
+        transform: translateX(0) rotate(0deg);
+    }
+    25% {
+        transform: translateX(100px) rotate(90deg);
+    }
+    50% {
+        transform: translateX(0) rotate(180deg);
+    }
+    75% {
+        transform: translateX(-100px) rotate(270deg);
+    }
+    100% {
+        transform: translateX(0) rotate(360deg);
+    }
+}

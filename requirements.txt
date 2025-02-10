@@ -3,3 +3,4 @@ gunicorn
 uvicorn~=0.34.0
 fastapi~=0.115.8
 Flask-Cors~=5.0.0
+requests~=2.32.3

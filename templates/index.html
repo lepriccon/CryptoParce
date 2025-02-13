@@ -3,119 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Parce</title>
+    <title>Binance Prices</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(to bottom, #2c2c2c, #000);
-            overflow: hidden;
-            color: white;
             font-family: Arial, sans-serif;
-        }
-
-        .price-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            max-width: 400px;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #2c2c2c, #1a1a1a);
+            color: white;
         }
-
-        #price-list {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        #price-list li {
-            margin: 10px;
-            font-size: 18px;
-            cursor: pointer;
-        }
-
-        #price-list li:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        #search-input {
-            margin-bottom: 20px;
+        #search {
+            width: 60%;
             padding: 10px;
-            font-size: 18px;
-            border: none;
+            font-size: 16px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
             border-radius: 5px;
-            width: 100%;
+            background: white;
+            z-index: 10;
+            color: black;
+        }
+        #container {
+            width: 60%;
+            overflow-y: auto;
+            flex-grow: 1;
+            margin-top: 10px;
+            padding-bottom: 10px;
+        }
+        .item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid #555;
+            font-size: 18px;
+        }
+        .item:nth-child(odd) { background: rgba(255, 255, 255, 0.2); }
+        .crypto-logo {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+        .symbol-container {
+            display: flex;
+            align-items: center;
         }
     </style>
 </head>
 <body>
-    <div class="price-container">
-        <input type="text" id="search-input" placeholder="Search pair..." oninput="handleSearch()">
-        <ul id="price-list"></ul>
-    </div>
+    <input type="text" id="search" placeholder="Search pairs...">
+    <div id="container"></div>
 
     <script>
-      let currentPair = "";
+        document.addEventListener("DOMContentLoaded", function () {
+            let searchInput = document.getElementById("search");
+            let container = document.getElementById("container");
+            let logos = {};
 
-      async function fetchPrice(pair) {
-        const response = await fetch(`/prices?pair=${pair}`);
-        const data = await response.json();
+            async function fetchLogos() {
+                try {
+                    let response = await fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd");
+                    let data = await response.json();
+                    logos = data.reduce((acc, coin) => {
+                        acc[coin.symbol.toUpperCase()] = coin.image;
+                        return acc;
+                    }, {});
+                } catch (error) {
+                    console.error("Error fetching logos:", error);
+                }
+            }
 
-        if (data.price) {
-          return { symbol: pair, price: data.price };
-        } else {
-          return null;
-        }
-      }
+            async function fetchPrices() {
+                try {
+                    let response = await fetch("https://api.binance.com/api/v3/ticker/price");
+                    let data = await response.json();
+                    let prices = {};
 
-      async function updatePrice(pair) {
-        const priceData = await fetchPrice(pair);
+                    data.forEach(item => {
+                        if (item.symbol.endsWith("USDT")) {
+                            let base = item.symbol.replace("USDT", "");
+                            prices[item.symbol] = {
+                                price: parseFloat(item.price),
+                                base: base
+                            };
+                        }
+                    });
 
-        if (priceData) {
-          const list = document.getElementById("price-list");
-          const existing = document.getElementById(pair);
+                    updateUI(prices);
+                } catch (error) {
+                    console.error("Error fetching prices:", error);
+                }
+            }
 
-          if (existing) {
-            existing.textContent = `${pair}: ${priceData.price} USDT`;
-          } else {
-            const li = document.createElement("li");
-            li.id = pair;
-            li.textContent = `${pair}: ${priceData.price} USDT`;
-            list.appendChild(li);
-          }
-        }
-      }
+            function updateUI(prices) {
+                let items = container.children;
+                let existingSymbols = new Set();
 
-      setInterval(() => {
-        if (currentPair) {
-          updatePrice(currentPair);
-        }
-      }, 1000);
+                for (let item of items) {
+                    let symbol = item.getAttribute("data-symbol");
+                    if (prices[symbol] !== undefined) {
+                        item.querySelector(".price").innerText = prices[symbol].price;
+                        existingSymbols.add(symbol);
+                    } else {
+                        item.remove();
+                    }
+                }
 
-      function handleSearch() {
-        const input = document.getElementById("search-input").value.toUpperCase();
+                for (let symbol in prices) {
+                    if (!existingSymbols.has(symbol)) {
+                        let div = document.createElement("div");
+                        div.classList.add("item");
+                        div.setAttribute("data-symbol", symbol);
 
-        const pairs = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "LTCUSDT", "XRPUSDT"];
+                        let baseSymbol = prices[symbol].base;
+                        let logoUrl = logos[baseSymbol] || "https://via.placeholder.com/24";
 
-        const filteredPairs = pairs.filter(pair => pair.startsWith(input));
+                        div.innerHTML = `
+                            <div class="symbol-container">
+                                <img src="${logoUrl}" alt="${baseSymbol}" class="crypto-logo">
+                                <span class="symbol">${baseSymbol} / USDT</span>
+                            </div>
+                            <span class="price">${prices[symbol].price}</span>
+                        `;
 
-        const list = document.getElementById("price-list");
-        list.innerHTML = "";
+                        container.appendChild(div);
+                    }
+                }
+            }
 
-        filteredPairs.forEach(pair => {
-          const li = document.createElement("li");
-          li.textContent = pair;
-          li.onclick = () => {
-            currentPair = pair;
-            updatePrice(pair);
-            document.getElementById("search-input").value = pair;  // Устанавливаем значение в поле поиска
-            list.innerHTML = "";  // Очищаем список подсказок
-          };
-          list.appendChild(li);
+            searchInput.addEventListener("input", function () {
+                let input = this.value.toLowerCase();
+                let items = container.children;
+                for (let item of items) {
+                    let symbol = item.querySelector(".symbol").innerText.toLowerCase();
+                    item.style.display = symbol.includes(input) ? "flex" : "none";
+                }
+            });
+
+            fetchLogos().then(() => {
+                setInterval(fetchPrices, 2500);
+                fetchPrices();
+            });
         });
-      }
     </script>
 </body>
 </html>
